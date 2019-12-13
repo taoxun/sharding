@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youyouxunyin.mapper.CarMapper">
+    <insert id="insert" parameterType="car">
+          insert into car (id,number,brand,creat_time,user_id) values (#{id},#{number},#{brand},#{creatTime},#{userId})
+    </insert>
+    <update id="update_1" parameterType="car">
+        update car set brand = #{brand} where id=#{id}
+    </update>
+
+    <update id="update_2" parameterType="java.util.Map">
+        update car set brand = #{brand} where id=#{id}
+    </update>
+
+    <select id="query" parameterType="car" resultType="car">
+      select car.*,u.id,u.name from car car,user u where car.id=#{id} and u.id=1191535039167336448
+    </select>
+
+    <select id="query_3" resultType="car">
+        SELECT
+            c1.id,
+            c1.number,
+            (
+                SELECT
+                    c2.brand
+                FROM
+                    car c2
+                WHERE
+                    c1.id = c2.id
+            )
+        FROM
+            car c1
+    </select>
+
+    <select id="query_2" resultType="car">
+        /*SELECT * FROM (SELECT *  from car ORDER BY id) a
+        union all
+        SELECT * FROM (SELECT *  from car ORDER BY id) b*/
+        SELECT
+            a.*
+        FROM
+            (
+                SELECT
+                    c1.*
+                FROM
+                    car c1
+                        LEFT JOIN car c2 ON c1.id = c2.id
+                ORDER BY
+                    c1.id
+            ) a
+        UNION ALL
+        SELECT
+            b.*
+        FROM
+            (
+                SELECT
+                    c1.*
+                FROM
+                    car c1
+                        LEFT JOIN car c2 ON c1.id = c2.id
+                ORDER BY
+                    c2.id
+            ) b
+    </select>
+
+</mapper>
