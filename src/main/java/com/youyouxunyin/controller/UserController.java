@@ -4,6 +4,7 @@ import com.youyouxunyin.entity.User;
 import com.youyouxunyin.service.UserService;
 import com.youyouxunyin.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +23,7 @@ public class UserController {
 
     @RequestMapping("/insert")
     public User insert() throws InterruptedException {
-        int count = 100;
+        int count = 50;
         CountDownLatch countDownLatch = new CountDownLatch(count);
         long start = System.currentTimeMillis();
         for (int i =0;i<count;i++){
@@ -44,10 +45,11 @@ public class UserController {
     }
 
     @RequestMapping("/query")
-    public List<User> query(){
+    public List<User> query(Long id){
         User user = new User();
-        //user.setId(1205394511203667969l);
-        user.setTel("151");
+        if (!StringUtils.isEmpty(id)){
+            user.setId(id);
+        }
         return userService.query(user);
     }
 }

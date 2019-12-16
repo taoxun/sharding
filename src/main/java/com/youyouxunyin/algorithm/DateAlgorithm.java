@@ -12,7 +12,7 @@ public class DateAlgorithm implements Algorithm {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public String doSharding(String tableName, Object value) {
+    public String doSharding(String tableName, Object value,int length) {
         if (value!=null){
             try{
                 DateUtil.parseDateTime(value.toString());

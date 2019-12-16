@@ -6,9 +6,9 @@ import com.youyouxunyin.util.RandomUtil;
 import lombok.Data;
 
 @Data
-@Sharding(tableName = "user",field = "id",mode = "hash")
+@Sharding(tableName = "user",field = "id",mode = "hash",length = 16)
 public class User {
-    private long id;
+    private Long id;
     private String name;
     private String address;
     private String tel;

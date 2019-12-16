@@ -3,17 +3,20 @@ package com.youyouxunyin.algorithm;
 
 public class HashAlgorithm implements Algorithm {
 
-    private static final int len = 16;
-
     @Override
-    public String doSharding(String tableName, Object value) {
+    public String doSharding(String tableName, Object value,int length) {
 
         if (this.isEmpty(value)){
             return tableName;
         }else{
             int h;
             int hash = (h = value.hashCode()) ^ (h >>> 16);
-            int index = (len - 1) & hash;
+            int index;
+            if (is2Power(length)){
+                index = (length - 1) & hash;
+            }else {
+                index = Math.floorMod(hash, length);
+            }
             return tableName+"_"+index;
         }
     }
@@ -23,5 +26,9 @@ public class HashAlgorithm implements Algorithm {
             return v==0;
         }
         return value==null;
+    }
+
+    public boolean is2Power(int length){
+        return (length & (length-1)) ==0;
     }
 }

@@ -1,9 +1,10 @@
+/*
 package com.youyouxunyin.interceptor;
-
 import com.youyouxunyin.algorithm.Algorithm;
 import com.youyouxunyin.algorithm.DateAlgorithm;
 import com.youyouxunyin.algorithm.HashAlgorithm;
 import com.youyouxunyin.annotations.Sharding;
+import com.youyouxunyin.util.ShardingContext;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
@@ -124,7 +125,7 @@ public class ShardingInterceptor implements Interceptor {
                     noKey(prepared,ms,boundSql,statement,tableName,parameter);
                 }
             }else {
-                selectSqlParser.processSelect(statement,false);
+                selectSqlParser.processSelect(statement);
                 modifySql(boundSql,statement.toString());
             }
             ShardingContext.remove();
@@ -183,3 +184,4 @@ public class ShardingInterceptor implements Interceptor {
         return null;
     }
 }
+*/

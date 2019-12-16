@@ -1,6 +1,5 @@
 package com.youyouxunyin.controller;
 
-import com.github.pagehelper.PageHelper;
 import com.youyouxunyin.entity.Car;
 import com.youyouxunyin.service.CarService;
 import com.youyouxunyin.util.RandomUtil;
@@ -73,7 +72,6 @@ public class CarController {
     @RequestMapping("/query_3")
     public List<Car> query_3(){
 
-        PageHelper.offsetPage(1, 3);
         Car car = new Car();
         car.setCreatTime("2019-02-10 16:36:19");
         Map<String, Object> map = new HashMap<>();

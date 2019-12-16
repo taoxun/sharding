@@ -10,4 +10,5 @@ public @interface Sharding {
     String tableName();
     String field();
     String mode();
+    int length() default 0;
 }
