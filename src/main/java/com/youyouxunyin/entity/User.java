@@ -6,7 +6,7 @@ import com.youyouxunyin.util.RandomUtil;
 import lombok.Data;
 
 @Data
-@Sharding(tableName = "user",field = "id",mode = "hash",length = 16)
+//@Sharding(tableName = "user",field = "id",mode = "hash",length = 16)
 public class User {
     private Long id;
     private String name;

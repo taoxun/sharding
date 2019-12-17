@@ -2,11 +2,14 @@ package com.youyouxunyin.controller;
 
 import com.youyouxunyin.entity.User;
 import com.youyouxunyin.service.UserService;
+import com.youyouxunyin.util.Page;
+import com.youyouxunyin.util.PageContext;
 import com.youyouxunyin.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -45,11 +48,17 @@ public class UserController {
     }
 
     @RequestMapping("/query")
-    public List<User> query(Long id){
+    public List<User> query(Long id,String tel,@RequestParam(value = "pageNum", required = false,defaultValue = "0") int pageNum,
+                            @RequestParam(value = "pageSize", required = false,defaultValue = "3") int pageSize){
         User user = new User();
         if (!StringUtils.isEmpty(id)){
             user.setId(id);
         }
-        return userService.query(user);
+        if (!StringUtils.isEmpty(tel)){
+            user.setTel(tel);
+        }
+        PageContext.startPage(pageNum, pageSize);
+        Page<User> query = (Page<User>) userService.query(user);
+        return query;
     }
 }
