@@ -61,21 +61,21 @@ public class SelectInterceptor implements Interceptor {
             cacheKey = (CacheKey)args[4];
             boundSql = (BoundSql)args[5];
         }
-
         Page page = PageContext.getPage();
         Sharding annotation = getAnnotation(parameter);
-        if (annotation!=null && page!=null){
-            List<Object> list = rewrite(executor, rowBounds, resultHandler, ms, boundSql, cacheKey, annotation, parameter,page);
+        if (annotation!=null){
+            List<Object> list = querySharding(executor, rowBounds, resultHandler, ms, boundSql, cacheKey, annotation, parameter,page);
             if (list!=null &&list.size()>=0){
                 return list;
             }
         }
+        if (page!=null){
+            return this.queryPage(page,boundSql.getSql(),executor,ms,boundSql,cacheKey,rowBounds,resultHandler,parameter);
+        }
         return invocation.proceed();
     }
 
-    private <E> List<E> rewrite(Executor executor, RowBounds rowBounds, ResultHandler resultHandler, MappedStatement ms, BoundSql boundSql, CacheKey cacheKey, Sharding sharding, Object parameter,Page page) throws JSQLParserException, IllegalAccessException, NoSuchFieldException, SQLException {
-
-        PageContext.clear();
+    private <E> List<E> querySharding(Executor executor, RowBounds rowBounds, ResultHandler resultHandler, MappedStatement ms, BoundSql boundSql, CacheKey cacheKey, Sharding sharding, Object parameter,Page page) throws JSQLParserException, IllegalAccessException, NoSuchFieldException, SQLException {
 
         if (ms.getSqlCommandType().equals(SqlCommandType.SELECT)) {
 
@@ -87,48 +87,66 @@ public class SelectInterceptor implements Interceptor {
             map.put("mode", sharding.mode());
             map.put("length", sharding.length());
             ShardingContext.set(map);
+            List<E> result = new ArrayList<>();
 
-            if (!StringUtils.isEmpty(value)) {
-
+            //分表键不为空
+            if (!StringUtils.isEmpty(value)){
                 sqlParser.processSelect(statement,-1);
                 if (page!=null){
-
-                    Long count = this.count(statement.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql);
-                    page.setTotal(count.intValue());
-
-                    StringBuffer sb = new StringBuffer();
-                    sb.append(statement.toString());
-                    sb.append(" limit ");
-                    sb.append(page.getStart());
-                    sb.append("," + page.getPageSize() );
-                    return ExecutorUtil.query(sb.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql,cacheKey);
+                    result = queryPage(page,statement.toString(),executor,ms,boundSql,cacheKey,rowBounds,resultHandler,parameter);
+                }else {
+                    result = ExecutorUtil.query(statement.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql,cacheKey);
                 }
-                return ExecutorUtil.query(statement.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql,cacheKey);
+                return result;
             }else {
+                //分表键为空 但是分表算法为Hash算法
                 if ("hash".equals(sharding.mode())){
-                    int counts = 0;
-                    List<E> result = new ArrayList<>();
-                    for (int i=0;i<sharding.length();i++){
-
-                        Statement parse = CCJSqlParserUtil.parse(boundSql.getSql());
-                        sqlParser.processSelect(parse,i);
-                        Long count = this.count(parse.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql);
-                        counts+=count;
-                        cacheKey.update(new Object());
-                        List<E> query = ExecutorUtil.query(parse.toString(), executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
-                        result.addAll(query);
+                    if (page!=null){
+                        int counts = 0;
+                        for (int i=0;i<sharding.length();i++){
+                            Statement parse = CCJSqlParserUtil.parse(boundSql.getSql());
+                            sqlParser.processSelect(parse,i);
+                            Long count = this.count(parse.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql);
+                            counts+=count;
+                            cacheKey.update(new Object());
+                            List<E> query = ExecutorUtil.query(parse.toString(), executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
+                            result.addAll(query);
+                        }
+                        page.setTotal(counts);
+                        page.setCountPage();
+                        if (page.getTotal()>0){
+                            sqlParser.sort(statement,result);
+                            return page.page(result);
+                        }
+                    }else {
+                        for (int i=0;i<sharding.length();i++){
+                            Statement parse = CCJSqlParserUtil.parse(boundSql.getSql());
+                            sqlParser.processSelect(parse,i);
+                            cacheKey.update(new Object());
+                            List<E> query = ExecutorUtil.query(parse.toString(), executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
+                            result.addAll(query);
+                        }
                     }
-                    page.setTotal(counts);
-                    page.setCountPage();
-                    if (page.getTotal()>0){
-                        sqlParser.sort(statement,result);
-                        return page.page(result);
-                    }
-                    return result;
                 }
             }
+            return result;
         }
         return null;
+    }
+
+    private <E> List<E> queryPage(Page page,String sql,Executor executor,MappedStatement ms,BoundSql boundSql, CacheKey cacheKey,RowBounds rowBounds, ResultHandler resultHandler,Object parameter) throws SQLException, IllegalAccessException {
+        Long count = this.count(sql,executor,ms,parameter,rowBounds,resultHandler,boundSql);
+        page.setTotal(count.intValue());
+        StringBuffer sb = new StringBuffer();
+        sb.append(sql);
+        sb.append(" limit ");
+        sb.append(page.getStart());
+        sb.append("," + page.getPageSize() );
+
+        page.setCountPage();
+        List<E> query = ExecutorUtil.query(sb.toString(), executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
+        page.addAll(query);
+        return page;
     }
 
     private Long count(String sql,Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException, IllegalAccessException {
@@ -150,14 +168,16 @@ public class SelectInterceptor implements Interceptor {
 
 
     private Sharding getAnnotation(Object parameter){
-        Sharding annotation = AnnotationUtils.findAnnotation(parameter.getClass(), Sharding.class);
-        if (annotation!=null){
-            return annotation;
-        }else {
-            if (parameter instanceof Map){
-                if (((Map) parameter).containsKey("sharding")){
-                    Object obj = ((Map) parameter).get("sharding");
-                    return AnnotationUtils.findAnnotation(obj.getClass(), Sharding.class);
+        if (parameter!=null){
+            Sharding annotation = AnnotationUtils.findAnnotation(parameter.getClass(), Sharding.class);
+            if (annotation!=null){
+                return annotation;
+            }else {
+                if (parameter instanceof Map){
+                    if (((Map) parameter).containsKey("sharding")){
+                        Object obj = ((Map) parameter).get("sharding");
+                        return AnnotationUtils.findAnnotation(obj.getClass(), Sharding.class);
+                    }
                 }
             }
         }

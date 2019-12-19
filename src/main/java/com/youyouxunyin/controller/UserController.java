@@ -48,8 +48,8 @@ public class UserController {
     }
 
     @RequestMapping("/query")
-    public List<User> query(Long id,String tel,@RequestParam(value = "pageNum", required = false,defaultValue = "0") int pageNum,
-                            @RequestParam(value = "pageSize", required = false,defaultValue = "3") int pageSize){
+    public Page<User> query(Long id,String tel,@RequestParam(value = "pageNum", required = false,defaultValue = "1") int pageNum,
+                            @RequestParam(value = "pageSize", required = false,defaultValue = "3") int pageSize) throws InterruptedException {
         User user = new User();
         if (!StringUtils.isEmpty(id)){
             user.setId(id);
@@ -58,7 +58,9 @@ public class UserController {
             user.setTel(tel);
         }
         PageContext.startPage(pageNum, pageSize);
-        Page<User> query = (Page<User>) userService.query(user);
-        return query;
+        /*List list = userService.query(user);
+
+        return list;*/
+        return (Page<User>) userService.query(user);
     }
 }

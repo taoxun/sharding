@@ -1,6 +1,5 @@
 package com.youyouxunyin.interceptor.sharding;
 
-import com.youyouxunyin.algorithm.Algorithm;
 import com.youyouxunyin.algorithm.AlgorithmHandler;
 import com.youyouxunyin.annotations.Sharding;
 import com.youyouxunyin.util.ReflectionUtil;
@@ -48,7 +47,7 @@ public class UpdateInterceptor implements Interceptor {
         Object parameter = boundSql.getParameterObject();
         String command = ms.getSqlCommandType().name();
 
-        Sharding sharding = AnnotationUtils.findAnnotation(parameter.getClass(), Sharding.class);
+        Sharding sharding = parameter==null?null:AnnotationUtils.findAnnotation(parameter.getClass(), Sharding.class);
         if (sharding!=null){
             this.rewrite(boundSql,sharding,command,parameter);
         }
