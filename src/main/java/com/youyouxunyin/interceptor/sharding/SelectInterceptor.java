@@ -108,10 +108,12 @@ public class SelectInterceptor implements Interceptor {
                             sqlParser.processSelect(parse,i);
                             Long count = this.getCount(parse.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql);
                             counts+=count;
-                            cacheKey.update(new Object());
-                            String limitSql = getLimitSql(page,parse.toString());
-                            List<E> query = ExecutorUtil.query(limitSql, executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
-                            result.addAll(query);
+                            if (count>0){
+                                cacheKey.update(new Object());
+                                String limitSql = getLimitSql(page,parse.toString());
+                                List<E> query = ExecutorUtil.query(limitSql, executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
+                                result.addAll(query);
+                            }
                         }
                         page.setTotal(counts);
                         page.setCountPage();
