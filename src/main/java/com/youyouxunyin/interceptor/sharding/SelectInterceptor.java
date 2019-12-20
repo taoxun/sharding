@@ -106,10 +106,11 @@ public class SelectInterceptor implements Interceptor {
                         for (int i=0;i<sharding.length();i++){
                             Statement parse = CCJSqlParserUtil.parse(boundSql.getSql());
                             sqlParser.processSelect(parse,i);
-                            Long count = this.count(parse.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql);
+                            Long count = this.getCount(parse.toString(),executor,ms,parameter,rowBounds,resultHandler,boundSql);
                             counts+=count;
                             cacheKey.update(new Object());
-                            List<E> query = ExecutorUtil.query(parse.toString(), executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
+                            String limitSql = getLimitSql(page,parse.toString());
+                            List<E> query = ExecutorUtil.query(limitSql, executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
                             result.addAll(query);
                         }
                         page.setTotal(counts);
@@ -134,22 +135,27 @@ public class SelectInterceptor implements Interceptor {
         return null;
     }
 
-    private <E> List<E> queryPage(Page page,String sql,Executor executor,MappedStatement ms,BoundSql boundSql, CacheKey cacheKey,RowBounds rowBounds, ResultHandler resultHandler,Object parameter) throws SQLException, IllegalAccessException {
-        Long count = this.count(sql,executor,ms,parameter,rowBounds,resultHandler,boundSql);
-        page.setTotal(count.intValue());
+
+    private String getLimitSql(Page page,String sql){
         StringBuffer sb = new StringBuffer();
         sb.append(sql);
         sb.append(" limit ");
         sb.append(page.getStart());
         sb.append("," + page.getPageSize() );
+        return sb.toString();
+    }
 
+    private <E> List<E> queryPage(Page page,String sql,Executor executor,MappedStatement ms,BoundSql boundSql, CacheKey cacheKey,RowBounds rowBounds, ResultHandler resultHandler,Object parameter) throws SQLException, IllegalAccessException {
+        Long count = this.getCount(sql,executor,ms,parameter,rowBounds,resultHandler,boundSql);
+        page.setTotal(count.intValue());
         page.setCountPage();
-        List<E> query = ExecutorUtil.query(sb.toString(), executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
+        String limitSql = getLimitSql(page,sql);
+        List<E> query = ExecutorUtil.query(limitSql, executor, ms, parameter, rowBounds, resultHandler, boundSql, cacheKey);
         page.addAll(query);
         return page;
     }
 
-    private Long count(String sql,Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException, IllegalAccessException {
+    private Long getCount(String sql,Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException, IllegalAccessException {
         String countMsId = ms.getId() + "_query_count";
         MappedStatement countMs = ExecutorUtil.getExistedMappedStatement(ms.getConfiguration(), countMsId);
         Long count;
