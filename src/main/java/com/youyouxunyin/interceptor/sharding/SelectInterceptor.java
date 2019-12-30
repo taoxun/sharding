@@ -61,18 +61,24 @@ public class SelectInterceptor implements Interceptor {
             cacheKey = (CacheKey)args[4];
             boundSql = (BoundSql)args[5];
         }
-        Page page = PageContext.getPage();
-        Sharding annotation = getAnnotation(parameter);
-        if (annotation!=null){
-            List<Object> list = querySharding(executor, rowBounds, resultHandler, ms, boundSql, cacheKey, annotation, parameter,page);
-            if (list!=null &&list.size()>=0){
-                return list;
+        try{
+            Page page = PageContext.getPage();
+            Sharding annotation = getAnnotation(parameter);
+            if (annotation!=null){
+                List<Object> list = querySharding(executor, rowBounds, resultHandler, ms, boundSql, cacheKey, annotation, parameter,page);
+                if (list!=null &&list.size()>=0){
+                    return list;
+                }
             }
+            if (page!=null){
+                return this.queryPage(page,boundSql.getSql(),executor,ms,boundSql,cacheKey,rowBounds,resultHandler,parameter);
+            }
+            return invocation.proceed();
+        }finally {
+            PageContext.clear();
+            ShardingContext.remove();
         }
-        if (page!=null){
-            return this.queryPage(page,boundSql.getSql(),executor,ms,boundSql,cacheKey,rowBounds,resultHandler,parameter);
-        }
-        return invocation.proceed();
+
     }
 
     private <E> List<E> querySharding(Executor executor, RowBounds rowBounds, ResultHandler resultHandler, MappedStatement ms, BoundSql boundSql, CacheKey cacheKey, Sharding sharding, Object parameter,Page page) throws JSQLParserException, IllegalAccessException, NoSuchFieldException, SQLException {
