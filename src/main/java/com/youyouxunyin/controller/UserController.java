@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 @RestController
@@ -23,6 +22,13 @@ public class UserController {
     UserService userService;
 
     RandomUtil random = new RandomUtil();
+
+    @RequestMapping("/insertUser")
+    public User insertUser (){
+        User user = new User(random);
+        userService.insert(user);
+        return user;
+    }
 
     @RequestMapping("/insert")
     public User insert() throws InterruptedException {
