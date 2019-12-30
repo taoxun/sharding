@@ -27,7 +27,7 @@
                     car c2
                 WHERE
                     c1.id = c2.id
-            )
+            ) brand,creat_time,user_id
         FROM
             car c1
     </select>
