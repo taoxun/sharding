@@ -2,6 +2,7 @@ package com.youyouxunyin.controller;
 
 import com.youyouxunyin.entity.Car;
 import com.youyouxunyin.service.CarService;
+import com.youyouxunyin.util.PageContext;
 import com.youyouxunyin.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,6 +77,9 @@ public class CarController {
         car.setCreatTime("2019-02-10 16:36:19");
         Map<String, Object> map = new HashMap<>();
         //map.put("creatTime","2019-02-10 16:36:19");
+
+        PageContext.startPage(1,5);
+
         map.put("sharding",car);
         return carService.query_3(map);
     }
