@@ -1,6 +1,6 @@
 package com.youyouxunyin.util;
 
-import cn.hutool.db.dialect.Dialect;
+import com.youyouxunyin.interceptor.CountSqlParser;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -11,7 +11,6 @@ import org.apache.ibatis.session.RowBounds;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import java.util.Map;
 public class ExecutorUtil {
 
     private static Field additionalParametersField;
+    private static final CountSqlParser countSqlParser = new CountSqlParser();
 
     static {
         try {
@@ -50,9 +50,8 @@ public class ExecutorUtil {
     }
 
     public static String getCountSql(String sql){
-        int index = sql.toLowerCase().indexOf("from");
-        String count_sql =  "select count(*) " + sql.substring(index);
-        return count_sql;
+        String countSql = countSqlParser.getSmartCountSql(sql);
+        return countSql;
     }
 
     public static MappedStatement getExistedMappedStatement(Configuration configuration, String msId) {
