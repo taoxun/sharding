@@ -1,7 +1,6 @@
-package com.youyouxunyin.interceptor;
+package com.youyouxunyin.interceptor.parser;
 
 
-import com.youyouxunyin.algorithm.Algorithm;
 import com.youyouxunyin.algorithm.AlgorithmHandler;
 import com.youyouxunyin.util.ComparatorUtil;
 import com.youyouxunyin.util.ShardingContext;

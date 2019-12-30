@@ -1,6 +1,6 @@
 package com.youyouxunyin.util;
 
-import com.youyouxunyin.interceptor.CountSqlParser;
+import com.youyouxunyin.interceptor.parser.CountSqlParser;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;

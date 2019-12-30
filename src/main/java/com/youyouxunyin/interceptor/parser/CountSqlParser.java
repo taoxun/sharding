@@ -1,4 +1,4 @@
-package com.youyouxunyin.interceptor;
+package com.youyouxunyin.interceptor.parser;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;

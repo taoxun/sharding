@@ -1,8 +1,7 @@
 package com.youyouxunyin.interceptor.sharding;
 
-import cn.hutool.core.collection.CollUtil;
 import com.youyouxunyin.annotations.Sharding;
-import com.youyouxunyin.interceptor.SelectSqlParser;
+import com.youyouxunyin.interceptor.parser.SelectSqlParser;
 import com.youyouxunyin.util.*;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
