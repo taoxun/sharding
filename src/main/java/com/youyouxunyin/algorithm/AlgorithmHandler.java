@@ -13,7 +13,7 @@ public class AlgorithmHandler {
 
     @PostConstruct
     public void init(){
-        algorithm.put("date",new DateAlgorithm());
+        algorithm.put("range",new RangeAlgorithm());
         algorithm.put("hash",new HashAlgorithm());
     }
 

@@ -7,7 +7,7 @@ import cn.hutool.core.date.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DateAlgorithm implements Algorithm {
+public class RangeAlgorithm implements Algorithm {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 

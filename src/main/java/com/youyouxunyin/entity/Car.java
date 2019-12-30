@@ -6,7 +6,7 @@ import com.youyouxunyin.util.RandomUtil;
 import lombok.Data;
 
 @Data
-@Sharding(tableName = "car",field = "creatTime",mode = "date")
+@Sharding(tableName = "car",field = "creatTime",mode = "range")
 public class Car {
     private long id;
     private String number;
